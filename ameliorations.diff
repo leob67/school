@@ -1,0 +1,509 @@
+--- a/index.html
++++ b/index.html
+@@ -4,6 +4,17 @@
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>School FR Dashboard</title>
++  <meta name="description" content="Dashboard de l'équipe School FR : économie, sanctions, permissions et gestion des serveurs.">
++  <meta name="theme-color" content="#08080a">
++  <meta property="og:site_name" content="School FR">
++  <meta property="og:type" content="website">
++  <meta property="og:title" content="School FR">
++  <meta property="og:description" content="Dashboard de l'équipe School FR : économie, sanctions, permissions et gestion des serveurs.">
++  <meta property="og:url" content="https://schoolfr.ayro.dev/">
++  <meta name="twitter:card" content="summary">
++  <meta name="twitter:title" content="School FR">
++  <meta name="twitter:description" content="Dashboard de l'équipe School FR : économie, sanctions, permissions et gestion des serveurs.">
++  <link rel="canonical" href="https://schoolfr.ayro.dev/">
+   <link rel="icon" href="/favicon.ico" sizes="any">
+   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+   <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+@@ -50,6 +61,18 @@
+         </div>
+       </header>
+ 
++      <header class="pub-hero" id="pub-hero" hidden>
++        <div class="pub-hero-main">
++          <p class="pub-eyebrow">Économie · <span>School FR</span></p>
++          <h2 class="pub-title">L'économie de School FR, en direct</h2>
++          <p class="pub-sub">Les chiffres des serveurs en temps réel&nbsp;: ce que les joueurs détiennent, ce qu'ils échangent et ce qu'ils font gagner.</p>
++        </div>
++        <div class="pub-hero-side">
++          <div id="pub-status" role="status" aria-live="polite"></div>
++          <p class="pub-updated muted" id="pub-updated"></p>
++        </div>
++      </header>
++
+       <nav class="segment nav" id="nav" hidden aria-label="Sections">
+         <button type="button" id="nav-activity">Mon activité</button>
+         <button type="button" id="nav-sanctions">Sanctions</button>
+@@ -221,6 +244,15 @@
+           <div class="panel-body" id="sessions-body"><p class="muted">Ça charge...</p></div>
+         </section>
+       </div>
++
++      <footer class="pub-foot" id="pub-foot" hidden>
++        <p class="pub-foot-brand"><span class="gradient">SCHOOL FR</span> · l'économie de nos serveurs</p>
++        <p class="pub-foot-note muted" id="pub-foot-note"></p>
++        <nav class="pub-foot-links" aria-label="Liens">
++          <a href="/">Connexion de l'équipe</a>
++          <!-- Ajoute ici le lien de ton Discord : <a href="https://discord.gg/xxxx">Discord</a> -->
++        </nav>
++      </footer>
+     </div>
+   </main>
+   <script src="/app.js"></script>
+--- a/style.css
++++ b/style.css
+@@ -486,32 +486,31 @@
+ .econ-live { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #5fe03a; }
+ .econ-live::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: econ-pulse 2s ease-out infinite; }
+ @keyframes econ-pulse { 0% { box-shadow: 0 0 0 0 rgba(95, 224, 58, 0.55); } 70%, 100% { box-shadow: 0 0 0 9px rgba(95, 224, 58, 0); } }
+-.econ-money .tile { position: relative; overflow: hidden; padding: 16px 18px; align-content: start; }
+-.econ-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "held added" "search added"; gap: 10px; margin-bottom: 16px; }
+-.econ-head .econ-held { grid-area: held; }
+-.econ-head .econ-added { grid-area: added; }
+-.econ-head .econ-search { grid-area: search; margin: 0; align-self: end; }
+-@media (max-width: 700px) { .econ-head { grid-template-columns: minmax(0, 1fr); grid-template-areas: "held" "added" "search"; } }
+-.econ-money .tile-value { font-size: 32px; }
++/* The three key numbers side by side: what is in circulation, what was added over the period, how many players */
++.econ-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin-bottom: 16px; }
++.econ-kpis .tile { position: relative; overflow: hidden; padding: 16px 18px 18px; align-content: start; gap: 4px; }
++.econ-kpis .tile-value { font-size: 32px; line-height: 1.15; }
++.econ-kpis .econ-held { min-height: 146px; padding-bottom: 18px; }
++.econ-kpis .econ-players { min-height: 150px; }
++.econ-kpis .tile-detail { color: var(--muted); font-size: 12px; }
+ /* The floating labels of a tile: each appears at the same place and rises at a steady speed while it fades. The
+    earlier ones are already higher when the next comes: several at once, nothing pushes anything */
+ .econ-stack { position: absolute; pointer-events: none; }
+ .econ-stack > * { position: absolute; white-space: nowrap; opacity: 0; animation: econ-rise var(--life, 1.6s) linear forwards, econ-fade var(--life, 1.6s) linear forwards; }
+ @keyframes econ-rise { from { transform: translateY(0); } to { transform: translateY(var(--rise, -100px)); } }
+ @keyframes econ-fade { 0% { opacity: 0; } 8% { opacity: 1; } 65% { opacity: 1; } 100% { opacity: 0; } }
+-/* circulation: from the bottom right corner up the whole tile */
+-.econ-stack-delta { right: 18px; bottom: 30px; }
++/* circulation: from the bottom right corner, up along the free side of the amount */
++.econ-stack-delta { right: 18px; bottom: 30px; --rise: -100px; }
+ .econ-stack-delta > * { right: 0; top: 0; }
+ .econ-delta { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+-/* gained / spent: from the amount's line, up past the box's top (the box doesn't clip them) */
++/* gained / spent: the label of the change rises in the lane kept free under the amount */
+ .econ-flow-stat { overflow: visible !important; }
+-.econ-flow-stat > .econ-stack-delta { right: 10px; bottom: auto; top: 27px; --rise: -64px; }
+-.econ-flow-stat .econ-delta { font-size: 13px; }
++.econ-flow-stat > .econ-stack-delta { right: 8px; bottom: 4px; top: auto; --rise: -18px; }
++.econ-flow-stat .econ-delta { font-size: 12px; }
+ /* new player counted: under the amount */
+ .econ-stack-new { left: 18px; bottom: 30px; --rise: -34px; --life: 3.6s; }
+ .econ-stack-new > * { left: 0; top: 0; }
+ .econ-new { font-size: 13px; font-weight: 600; color: #7db8ff; }
+-.econ-head .econ-held { min-height: 146px; }
+ .econ-ignored { margin-top: 18px; border: 1px solid var(--stroke); border-radius: var(--radius); padding: 10px 14px; }
+ .econ-ignored summary { cursor: pointer; font-weight: 700; }
+ .econ-ignored-body { display: grid; gap: 10px; margin-top: 12px; justify-items: start; }
+@@ -523,7 +522,7 @@
+ .econ-flow-bar { height: 6px; border-radius: 999px; background: #ff6b6d; overflow: hidden; }
+ .econ-flow-in { display: block; height: 100%; width: 50%; background: #5fe03a; transition: width 0.9s cubic-bezier(0.2, 0.8, 0.2, 1); }
+ .econ-flow-stats { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+-.econ-flow-stat { position: relative; display: grid; gap: 1px; background: var(--panel, #141414); border: 1px solid #222; border-radius: var(--radius); padding: 8px 10px; overflow: hidden; }
++.econ-flow-stat { position: relative; display: grid; gap: 1px; background: var(--panel, #141414); border: 1px solid #222; border-radius: var(--radius); padding: 8px 10px 26px; overflow: hidden; }
+ .econ-flow-stat > span { font-size: 12px; }
+ .econ-flow-stat strong { font-size: 17px; font-variant-numeric: tabular-nums; }
+ .econ-flow-gained strong { color: #5fe03a; }
+@@ -668,3 +667,80 @@
+ .mods-top .server-filters { margin-right: 0; }
+ 
+ .shop-live-note { flex-basis: 100%; margin: 0; color: #5fe03a; }
++
++/* ------------------------------------------------------------------ Économie : la liste des objets
++   The panel is rebuilt around the table: a toolbar (period, search, sort), a table that scrolls on its own
++   with the header always in sight, and a button that shows the next lines. */
++.econ-notice { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px; padding: 9px 12px; background: #1b1114; border: 1px solid #3b2026; border-left: 3px solid var(--danger); border-radius: var(--radius); font-size: 13px; }
++.econ-notice .econ-since { color: #ffb9b9; }
++.econ-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 12px; }
++.econ-toolbar .econ-spans { flex: none; }
++.econ-toolbar .search { flex: 1 1 200px; max-width: 320px; margin-bottom: 0; }
++.econ-count { margin-left: auto; font-size: 13px; }
++.econ-sort-box { display: none; align-items: center; gap: 6px; }
++.econ-sort-select { padding: 7px 8px; background: var(--button); color: var(--text); border: 1px solid var(--stroke); border-radius: 6px; font: inherit; font-size: 13px; }
++.econ-sort-dir { padding: 7px 12px; font-size: 12px; }
++/* The list scrolls on its own: the header stays, the page stays short */
++.econ-table-box { max-height: min(72vh, 780px); overflow: auto; border: 1px solid #222; border-radius: var(--radius); }
++.econ-table { margin-top: 0; }
++.econ-table thead th { position: sticky; top: 0; z-index: 2; background: var(--title); box-shadow: inset 0 -1px 0 var(--stroke); }
++.econ-table tbody tr:nth-child(even) { background: #0c0c0e; }
++.econ-table tbody tr:hover { background: #17171a; }
++.econ-table td { padding: 9px 12px; }
++/* The caption is not seen, it says what the table is to a screen reader */
++.econ-caption { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
++.econ-cell-value { display: inline-block; text-align: right; }
++.econ-more { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
++.econ-more p { margin: 0; font-size: 13px; }
++.econ-more .button { padding: 8px 14px; }
++@media (prefers-reduced-motion: reduce) { .econ-live::before { animation: none; } .econ-flow-in { transition: none; } }
++
++/* On a phone the table becomes cards: every number keeps its name, nothing is cut off */
++@media (max-width: 760px) {
++  .econ-table-box { border: 0; border-radius: 0; }
++  .econ-table thead { display: none; }
++  .econ-table, .econ-table tbody, .econ-table tr, .econ-table td { display: block; width: 100%; }
++  .econ-table tr { background: var(--button); border: 1px solid #222; border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; }
++  .econ-table tbody tr:nth-child(even) { background: var(--button); }
++  .econ-table td { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; border: 0; padding: 3px 0; }
++  .econ-table td::before { content: attr(data-label); flex: none; color: var(--muted); font-size: 12px; font-weight: 600; }
++  .econ-table td[data-label="Nom"] { padding-bottom: 8px; font-size: 15px; font-weight: 700; }
++  .econ-table td[data-label="Nom"]::before { content: none; }
++  .econ-table td[data-label="Type"] { justify-content: flex-start; color: var(--muted); font-size: 12px; }
++  .econ-table td[data-label="Type"]::before { content: none; }
++  .econ-table td[data-label="Type"]::after { content: ''; }
++  .econ-table .econ-cell-value { text-align: right; }
++  .econ-sort-box { display: flex; }
++  .econ-count { margin-left: 0; width: 100%; }
++  .econ-toolbar { gap: 10px; }
++  .econ-toolbar .search { max-width: none; }
++  /* The period takes the whole line: the three buttons share it instead of going off the screen */
++  .econ-toolbar .econ-spans { width: 100%; }
++  .econ-toolbar .econ-spans button { flex: 1 1 0; padding: 8px 4px; font-size: 13px; text-align: center; }
++  /* The quantity traded stays on the same line as the number of exchanges */
++  .econ-table .econ-cell-value { display: inline; }
++  .econ-table .econ-cell-value .econ-sub { display: inline; margin-left: 5px; }
++}
++
++/* ------------------------------------------------------------------ The public page
++   A title that says what the page is, the live line next to it, and a footer at the bottom */
++.pub-hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px 28px; margin-bottom: 18px; padding: 4px 2px 18px; border-bottom: 1px solid #1c1c1c; }
++.pub-eyebrow { margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
++.pub-title { margin: 0; font-size: clamp(22px, 3.6vw, 34px); font-weight: 700; line-height: 1.15; }
++.pub-sub { margin: 10px 0 0; max-width: 58ch; color: var(--muted); font-size: 14px; }
++.pub-hero-side { display: grid; gap: 6px; justify-items: end; text-align: right; }
++.pub-hero-side .econ-live-line { justify-content: flex-end; }
++.pub-updated { margin: 0; font-size: 12px; }
++.pub-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 18px; margin-top: 22px; padding: 16px 2px 4px; border-top: 1px solid #1c1c1c; font-size: 13px; }
++.pub-foot p { margin: 0; }
++.pub-foot-brand { font-weight: 700; }
++.pub-foot-note { color: var(--muted); font-size: 12px; }
++.pub-foot-links { display: flex; gap: 16px; }
++.pub-foot-links a { color: var(--muted); text-decoration: none; }
++.pub-foot-links a:hover, .pub-foot-links a:focus-visible { color: var(--text); text-decoration: underline; }
++@media (max-width: 760px) {
++  .pub-hero { gap: 12px; }
++  .pub-hero-side { justify-items: start; text-align: left; }
++  .pub-hero-side .econ-live-line { justify-content: flex-start; }
++  .pub-foot { flex-direction: column; align-items: flex-start; gap: 10px; }
++}
+--- a/app.js
++++ b/app.js
+@@ -1442,11 +1442,15 @@
+ // ---------------------------------------------------------------- economy: what the players own, trade and gain
+ // span: the period of the Échanges and Ajoutés columns, picked with 24 h / 7 j / 30 j above the table
+ // changed: while the table is drawn after a live refresh, the cells that moved ("kind\0name" -> {total: 'up'...})
+-const econState = { search: '', span: 'day', sort: 'total', desc: true, icons: {}, changed: null };
++// The table shows the lines by packets of ECON_PAGE: the whole list is more than 480 lines, nobody reads them all
++const ECON_PAGE = 50;
++const ECON_MAX = 500; // the table never holds more than this, even after many clicks
++const econState = { search: '', span: 'day', sort: 'total', desc: true, icons: {}, changed: null, limit: ECON_PAGE };
+ // /economie/public opened without being logged in (or without the permission): only this page, the main game's numbers
+ let publicEconomy = false;
+ const econApi = (path, query) => (publicEconomy ? `/api/public/economy${path}${query ? `?${query}` : ''}` : `/api/economy${path}?${query}`);
+ const ECON_SINCE = 'Seuls les joueurs qui se sont connectés depuis le 11 novembre 2026 sont comptés.';
++const ECON_SINCE_SHORT = 'connectés depuis le 11 novembre 2026';
+ // The periods start again at midnight (Paris): a new day, a new week (Monday), a new month
+ const ECON_SPANS = [['day', "Aujourd'hui"], ['week', 'Cette semaine'], ['month', 'Ce mois-ci']];
+ const ECON_SPAN_TEXT = { day: "aujourd'hui", week: 'cette semaine', month: 'ce mois-ci' };
+@@ -1649,12 +1653,17 @@
+   }
+ 
+   // At the top: the period (24 h / 7 j / 30 j), used by the added money and the table's Échanges / Ajoutés columns
+-  const top = el('div', 'controls');
+-  const filters = el('div', 'segment');
++  const top = el('div', 'controls econ-status');
++  const filters = el('div', 'segment econ-spans');
+   const live = el('div', 'econ-live-line');
+   // Next to "En direct": how many people have this page open (the server counts who asks for the live money)
+   const viewersLabel = el('span', 'econ-viewers');
+-  const showViewers = count => { viewersLabel.textContent = count > 0 ? `${formatNumber(count)} ${count > 1 ? 'personnes' : 'personne'} sur la page` : ''; };
++  const showViewers = count => {
++    const text = !count ? '' : publicEconomy
++      ? `${formatNumber(count)} visiteur${count > 1 ? 's' : ''} sur la page`
++      : `${formatNumber(count)} ${count > 1 ? 'personnes' : 'personne'} sur la page`;
++    if (viewersLabel.textContent !== text) viewersLabel.textContent = text; // only when it changes: it is read out loud
++  };
+   const liveLabel = el('span', 'econ-live', 'En direct');
+   const liveHead = el('span', 'econ-live-head');
+   liveHead.append(liveLabel, viewersLabel);
+@@ -1668,8 +1677,12 @@
+   warnPath.setAttribute('d', 'M12 2 1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z');
+   warn.append(warnPath);
+   since.append(warn, el('span', '', ECON_SINCE));
+-  live.append(liveHead, since);
+-  top.append(live, filters);
++  // The note is a strip of its own: it says what is counted, it is not part of the live line
++  const notice = el('div', 'econ-notice');
++  notice.append(since);
++  live.append(liveHead);
++  // On the public page the live line goes next to the title, in the hero; inside the dashboard it stays on top
++  (publicEconomy ? $('pub-status') : top).append(live);
+ 
+   // Money: what the players hold now, and what came in over the period: net, with what was gained and what was spent.
+   // The added money's tile goes down beside the search (econ-head).
+@@ -1717,12 +1730,30 @@
+     return next;
+   }
+   let shown = behind();
+-  const tiles = el('div', 'econ-head econ-money');
++  // The three key numbers side by side: what is in circulation, what was added over the period, how many players
++  const tiles = el('div', 'econ-kpis');
+   const held = tile('Argent en circulation', '0 €');
+   held.classList.add('econ-held');
++  held.append(el('span', 'muted tile-detail', "L'argent que les joueurs ont sur eux"));
+   const added = tile('Argent ajouté', '0 €');
+   added.classList.add('econ-added');
+-  tiles.append(held, added);
++  const playersCard = tile('Joueurs comptés', formatNumber(data.players || 0));
++  playersCard.classList.add('econ-players');
++  playersCard.append(el('span', 'muted tile-detail', ECON_SINCE_SHORT));
++  tiles.append(held, added, playersCard);
++
++  // "Mis à jour il y a X s": how old the numbers on screen are. It ticks on its own so the visitor knows
++  // the page is really following the game and not frozen
++  const updatedLabel = $('pub-updated');
++  const footNote = $('pub-foot-note');
++  let lastUpdate = data.lastAt ? data.lastAt * 1000 : Date.now();
++  const updateAge = () => {
++    const seconds = Math.max(0, Math.round((serverNow() - lastUpdate) / 1000));
++    if (updatedLabel) updatedLabel.textContent = seconds < 10 ? 'Mis à jour à l’instant' : seconds < 60 ? `Mis à jour il y a ${seconds} s` : `Mis à jour il y a ${Math.floor(seconds / 60)} min`;
++    if (footNote) footNote.textContent = `Chiffres sauvegardés en jeu · dernière mise à jour ${new Date(lastUpdate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
++  };
++  const ageTicker = setInterval(() => { if (!tiles.isConnected) { clearInterval(ageTicker); return; } updateAge(); }, 1000);
++  updateAge();
+   const heldValue = held.querySelector('.tile-value');
+   const addedValue = added.querySelector('.tile-value');
+   const addedLabel = added.querySelector('.tile-label');
+@@ -1825,6 +1856,7 @@
+     }
+     data.rows = fresh.rows;
+     data.nametagImages = fresh.nametagImages;
++    lastUpdate = serverNow();
+     econState.changed = changed;
+     fill();
+     econState.changed = null;
+@@ -1843,6 +1875,7 @@
+       const fresh = await getJson(liveUrl(liveSeq === null ? backQuery : `part=cash&after=${liveSeq}`));
+       if (!fresh.cash || !tiles.isConnected) return;
+       readClock(fresh);
++      lastUpdate = serverNow(); // the numbers on screen are as fresh as this answer
+       // The dashboard restarted (seq went back): its changes are lost, straight to the numbers
+       if (liveSeq !== null && fresh.seq < liveSeq) queue.length = 0;
+       else enqueue(fresh.events);
+@@ -1855,7 +1888,6 @@
+   const poll = setInterval(ask, ECON_REFRESH);
+ 
+   // Search
+-  const bar = el('div', 'controls');
+   const search = input('search', econState.search, { autocomplete: 'off', placeholder: 'Barre de chocolat...' });
+   const searchBox = el('label', 'search', 'Chercher un objet ou un nametag');
+   searchBox.append(search);
+@@ -1874,7 +1906,6 @@
+     });
+     filters.append(option);
+   }
+-  bar.append(searchBox);
+ 
+   // The table, sorted by a click on a column title (again: the other way)
+   const columns = [
+@@ -1885,23 +1916,54 @@
+     ['trades', 'Échanges', row => row.trades[econState.span]],
+     ['added', 'Ajoutés', row => row.added[econState.span]],
+   ];
++  // On small screens the table turns into cards: the column titles are gone, so a select sorts the list
++  const sortBox = el('div', 'econ-sort-box');
++  const sortSelect = el('select', 'econ-sort-select');
++  for (const [key, label] of columns) {
++    const option = el('option', '', label);
++    option.value = key;
++    sortSelect.append(option);
++  }
++  const sortDir = el('button', 'button econ-sort-dir', econState.desc ? '▼' : '▲');
++  sortDir.type = 'button';
++  sortDir.setAttribute('aria-label', 'Inverser le tri');
++  sortSelect.addEventListener('change', () => {
++    econState.sort = sortSelect.value;
++    econState.desc = econState.sort !== 'name' && econState.sort !== 'kind';
++    fill();
++  });
++  sortDir.addEventListener('click', () => { econState.desc = !econState.desc; fill(); });
++  sortBox.append(sortSelect, sortDir);
++
+   const table = el('table', 'table econ-table');
++  // The caption says what the table is: on small screens it is the only thing that says it
++  const caption = el('caption', 'econ-caption', 'Ce que les joueurs de School FR détiennent, échangent et font tourner sur les serveurs');
+   const thead = el('thead');
+   const head = el('tr');
+   thead.append(head);
+   const tbody = el('tbody');
+-  table.append(thead, tbody);
+-  const tableBox = el('div', 'table-scroll');
++  table.append(caption, thead, tbody);
++  const tableBox = el('div', 'table-scroll econ-table-box');
+   tableBox.append(table);
+-  const more = el('p', 'muted');
++  // Below the table: how many lines are shown, and the button that shows the next ones
++  const more = el('div', 'econ-more');
++  const moreText = el('p', 'muted');
++  const moreButton = el('button', 'button', 'Afficher plus');
++  moreButton.type = 'button';
++  moreButton.addEventListener('click', () => { econState.limit = Math.min(econState.limit + ECON_PAGE, ECON_MAX); fill(); });
++  more.append(moreText, moreButton);
++  // The number of lines found, next to the search
++  const countLabel = el('span', 'econ-count muted');
+ 
+   function renderHead() {
+     head.replaceChildren(...columns.map(([key, label]) => {
+       const th = el('th', key === 'name' || key === 'kind' ? '' : 'num');
++      th.scope = 'col';
+       const sorted = econState.sort === key;
+       th.setAttribute('aria-sort', sorted ? (econState.desc ? 'descending' : 'ascending') : 'none');
+       const pick = el('button', 'econ-sort', `${label}${sorted ? (econState.desc ? ' ▼' : ' ▲') : ''}`);
+       pick.type = 'button';
++      pick.setAttribute('aria-label', `Trier par ${label}`);
+       pick.addEventListener('click', () => {
+         if (econState.sort === key) econState.desc = !econState.desc;
+         else {
+@@ -1913,12 +1975,20 @@
+       th.append(pick);
+       return th;
+     }));
++    // The small screens sort with the select, it follows the same column
++    sortSelect.value = econState.sort;
++    sortDir.textContent = econState.desc ? '▼' : '▲';
++    sortDir.setAttribute('aria-label', econState.desc ? 'Trier du plus grand au plus petit' : 'Trier du plus petit au plus grand');
+   }
+ 
+   function tradeCell(row, span) {
+-    const cell = el('td', 'num', formatNumber(row.trades[span]));
++    const cell = el('td', 'num');
++    cell.dataset.label = 'Échanges';
++    // The number and the quantity traded go together: on a phone they stay in the same block
++    const content = el('span', 'econ-cell-value', formatNumber(row.trades[span]));
+     const quantity = Math.round(row.traded[span]);
+-    if (row.trades[span] && quantity !== row.trades[span]) cell.append(el('small', 'muted econ-sub', `${formatNumber(quantity)} échangés`));
++    if (row.trades[span] && quantity !== row.trades[span]) content.append(el('small', 'muted econ-sub', `${formatNumber(quantity)} échangés`));
++    cell.append(content);
+     return cell;
+   }
+ 
+@@ -1935,19 +2005,26 @@
+         return (econState.desc ? -order : order) || a.name.localeCompare(b.name, 'fr');
+       });
+     renderHead();
+-    tbody.replaceChildren(...rows.slice(0, 500).map(row => {
++    // Only the first lines are in the table: the list is long, the rest comes with the button
++    const limit = Math.min(econState.limit, rows.length);
++    tbody.replaceChildren(...rows.slice(0, limit).map(row => {
+       const tr = el('tr');
+       const nameCell = el('td');
++      nameCell.dataset.label = 'Nom';
+       const name = el('div', 'econ-name');
+       if (row.kind === 'nametag') name.append(econPicture(row.name, data.nametagImages || {}));
+       name.append(el('span', '', row.name));
+       nameCell.append(name);
+       const span = econState.span;
+-      tr.append(nameCell, el('td', '', row.kind === 'nametag' ? 'Nametag' : 'Objet'),
+-        el('td', 'num', formatNumber(Math.round(row.total))),
+-        el('td', 'num', formatNumber(row.holders)),
+-        tradeCell(row, span),
+-        el('td', `num ${signClass(row.added[span])}`, signedNumber(row.added[span])));
++      const kindCell = el('td', '', row.kind === 'nametag' ? 'Nametag' : 'Objet');
++      kindCell.dataset.label = 'Type';
++      const totalCell = el('td', 'num', formatNumber(Math.round(row.total)));
++      totalCell.dataset.label = 'En circulation';
++      const holdersCell = el('td', 'num', formatNumber(row.holders));
++      holdersCell.dataset.label = 'Joueurs qui en ont';
++      const addedCell = el('td', `num ${signClass(row.added[span])}`, signedNumber(row.added[span]));
++      addedCell.dataset.label = 'Ajoutés';
++      tr.append(nameCell, kindCell, totalCell, holdersCell, tradeCell(row, span), addedCell);
+       const marks = econState.changed?.get(`${row.kind}\u0000${row.name}`);
+       if (marks) {
+         ['total', 'holders', 'trades', 'added'].forEach((key, i) => {
+@@ -1963,14 +2040,27 @@
+       tr.append(empty);
+       tbody.append(tr);
+     }
+-    more.textContent = rows.length > 500 ? `Et ${formatNumber(rows.length - 500)} de plus, cherche pour les trouver` : '';
++    countLabel.textContent = rows.length ? `${formatNumber(rows.length)} ${rows.length > 1 ? 'lignes' : 'ligne'}` : 'Aucun résultat';
++    const left = rows.length - limit;
++    moreText.textContent = left > 0 ? `${formatNumber(limit)} lignes affichées sur ${formatNumber(rows.length)}` : '';
++    moreButton.hidden = left <= 0;
++    moreButton.textContent = `Afficher ${formatNumber(Math.min(ECON_PAGE, left))} de plus`;
+   }
+-  search.addEventListener('input', fill);
++  // The search is not filtered at every letter: the table is drawn again after a short pause
++  let searchTimer = 0;
++  search.addEventListener('input', () => {
++    clearTimeout(searchTimer);
++    searchTimer = setTimeout(() => { econState.limit = ECON_PAGE; fill(); }, 120);
++  });
+   fill();
+ 
+-  bar.classList.add('econ-search');
+-  tiles.append(bar); // under the circulation, beside the added money
+-  root.replaceChildren(top, tiles, tableBox, more);
++  // The toolbar: the period, the search, the sort (small screens) and the number of lines found
++  const toolbar = el('div', 'econ-toolbar');
++  toolbar.append(filters, searchBox, sortBox, countLabel);
++  // The panel: the note, the numbers, the toolbar and the table. On the public page the live line is in the hero
++  root.replaceChildren(...(publicEconomy
++    ? [notice, tiles, toolbar, tableBox, more]
++    : [top, notice, tiles, toolbar, tableBox, more]));
+   if (!publicEconomy && can('economy.edit')) root.append(econIgnoredSection());
+   if (await loadEconIcons(Object.values(data.nametagImages || {})) && currentTab === 'economy' && tabEnv.economy === env) fill();
+ }
+@@ -4032,6 +4122,26 @@
+ function isPublicEconomyUrl() {
+   return location.pathname.replace(/\/+$/, '') === '/economie/public';
+ }
++// The description of the page for the links (Discord, search engines): the numbers change, the words don't
++const PUBLIC_DESCRIPTION = "L'économie de School FR en direct : l'argent en circulation, les objets les plus échangés et les joueurs comptés sur nos serveurs Roblox. Mis à jour toutes les secondes.";
++function setMeta(selector, attribute, name, content) {
++  let tag = document.head.querySelector(selector);
++  if (!tag) {
++    tag = document.createElement('meta');
++    tag.setAttribute(attribute, name);
++    document.head.append(tag);
++  }
++  tag.setAttribute('content', content);
++}
++function setCanonical(url) {
++  let link = document.head.querySelector('link[rel="canonical"]');
++  if (!link) {
++    link = document.createElement('link');
++    link.rel = 'canonical';
++    document.head.append(link);
++  }
++  link.href = url;
++}
+ function startPublicEconomy() {
+   publicEconomy = true;
+   tabEnv.economy = 'live';
+@@ -4039,8 +4149,21 @@
+   $('nav').hidden = true;
+   $('view-bar').hidden = true;
+   document.querySelector('#home .who').hidden = true;
++  // The public page has its own head: the title of the page, the live line and the footer
++  $('pub-hero').hidden = false;
++  $('pub-foot').hidden = false;
++  document.body.classList.add('public-page');
+   for (const tab of TAB_IDS) $(`tab-${tab}`).hidden = tab !== 'economy';
+-  document.title = 'Économie · School FR';
++  document.title = 'Économie de School FR · les chiffres de nos serveurs en direct';
++  const url = `${location.origin}/economie/public`;
++  setMeta('meta[name="description"]', 'name', 'description', PUBLIC_DESCRIPTION);
++  setMeta('meta[property="og:title"]', 'property', 'og:title', 'Économie de School FR');
++  setMeta('meta[property="og:description"]', 'property', 'og:description', PUBLIC_DESCRIPTION);
++  setMeta('meta[property="og:url"]', 'property', 'og:url', url);
++  setMeta('meta[property="og:type"]', 'property', 'og:type', 'website');
++  setMeta('meta[name="twitter:title"]', 'name', 'twitter:title', 'Économie de School FR');
++  setMeta('meta[name="twitter:description"]', 'name', 'twitter:description', PUBLIC_DESCRIPTION);
++  setCanonical(url);
+   show('home');
+   loadEconomy().catch(err => { $('economy-body').textContent = err.message; });
+ }

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>School FR Dashboard</title>
+  <meta name="description" content="Dashboard de l'équipe School FR : économie, sanctions, permissions et gestion des serveurs.">
+  <meta name="theme-color" content="#08080a">
+  <meta property="og:site_name" content="School FR">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="School FR">
+  <meta property="og:description" content="Dashboard de l'équipe School FR : économie, sanctions, permissions et gestion des serveurs.">
+  <meta property="og:url" content="https://schoolfr.ayro.dev/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="School FR">
+  <meta name="twitter:description" content="Dashboard de l'équipe School FR : économie, sanctions, permissions et gestion des serveurs.">
+  <link rel="canonical" href="https://schoolfr.ayro.dev/">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main id="app" class="page">
+    <section class="panel center" id="loading"><p class="muted">Ça charge...</p></section>
+
+    <section class="panel center" id="login" hidden>
+      <header class="panel-title"><h1 class="gradient">SCHOOL FR</h1></header>
+      <div class="panel-body">
+        <p>Le dashboard de l'équipe modo &lt;3</p>
+        <p class="error" id="login-error" hidden></p>
+        <a class="button primary" href="/auth/discord">Connecte-toi avec Discord</a>
+      </div>
+    </section>
+
+    <section class="panel center" id="pin" hidden>
+      <header class="panel-title"><h1 class="gradient">SCHOOL FR</h1></header>
+      <div class="panel-body">
+        <p>Salut <strong id="pin-name"></strong>, entre ton code PIN pour ouvrir le dashboard</p>
+        <form id="pin-form" class="pin-form">
+          <input id="pin-code" class="pin-input" type="password" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="off" aria-label="Code PIN" required>
+          <p class="error" id="pin-error" hidden></p>
+          <button class="button primary" type="submit">Ouvrir</button>
+        </form>
+        <p class="muted note">C'est pas toi ? <button class="link-button" id="pin-logout" type="button">Se déco</button></p>
+      </div>
+    </section>
+
+    <div id="home" hidden>
+      <header class="topbar">
+        <h1 class="gradient">SCHOOL FR</h1>
+        <div class="who">
+          <button class="who-button" id="nav-settings" type="button" title="Paramètres du compte">
+            <img id="avatar" alt="" width="36" height="36" hidden>
+            <span id="name"></span>
+          </button>
+          <button class="button" id="logout" type="button">Se déco</button>
+        </div>
+      </header>
+
+      <header class="pub-hero" id="pub-hero" hidden>
+        <div class="pub-hero-main">
+          <p class="pub-eyebrow">Économie · <span>School FR</span></p>
+          <h2 class="pub-title">L'économie de School FR, en direct</h2>
+          <p class="pub-sub">Les chiffres des serveurs en temps réel&nbsp;: ce que les joueurs détiennent, ce qu'ils échangent et ce qu'ils font gagner.</p>
+        </div>
+        <div class="pub-hero-side">
+          <div id="pub-status" role="status" aria-live="polite"></div>
+          <p class="pub-updated muted" id="pub-updated"></p>
+        </div>
+      </header>
+
+      <nav class="segment nav" id="nav" hidden aria-label="Sections">
+        <button type="button" id="nav-activity">Mon activité</button>
+        <button type="button" id="nav-sanctions">Sanctions</button>
+        <button type="button" id="nav-gestion" hidden>Gestion</button>
+        <button type="button" id="nav-team" hidden>Équipe</button>
+        <button type="button" id="nav-anticheat" hidden>Anticheat</button>
+        <button type="button" id="nav-economy" hidden>Économie</button>
+        <button type="button" id="nav-perms" hidden>Permissions</button>
+        <button type="button" id="nav-shop" hidden>Boutique</button>
+        <button type="button" id="nav-codes" hidden>Codes</button>
+        <button type="button" id="nav-afk" hidden>Event</button>
+        <button type="button" id="nav-texts" hidden>Règlement</button>
+        <span id="nav-mods" class="nav-mods"></span>
+      </nav>
+
+      <div class="view-bar" id="view-bar"></div>
+
+      <div id="tab-activity">
+        <section class="panel" id="activity-panel" hidden>
+          <header class="panel-title"><h2>Mon activité</h2></header>
+          <div class="panel-body" id="activity-body"></div>
+        </section>
+
+        <section class="panel" id="verify-help" hidden>
+          <header class="panel-title"><h2>Lie ton compte Roblox</h2></header>
+          <div class="panel-body">
+            <ol>
+              <li>Fais <code>/verify</code> sur Discord</li>
+              <li>Dans School FR, va dans <strong>Paramètres</strong> et entre ton code</li>
+              <li>Recharge cette page et c'est bon ^^</li>
+            </ol>
+            <p class="muted">Ton code marche pendant 10 minutes. Tes stats en jeu sont gardées même si t'es pas encore vérifié</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <header class="panel-title"><h2>Ton compte</h2></header>
+          <div class="panel-body rows">
+            <div class="row"><span class="muted">Rôle</span><strong id="role"></strong></div>
+            <div class="row"><span class="muted">Compte Roblox</span><strong id="roblox"></strong></div>
+            <div class="row" id="verified-row" hidden><span class="muted">Vérifié</span><strong id="verified"></strong></div>
+          </div>
+        </section>
+      </div>
+
+      <div id="tab-team" hidden>
+        <section class="panel" id="mods-panel">
+          <header class="panel-title"><h2>Tous les modos</h2></header>
+          <div class="panel-body">
+            <div class="mods-top">
+              <label class="search">Chercher un modo<input id="mods-search" autocomplete="off" type="search"></label>
+              <div class="server-filters" id="mods-filters" title="Le temps compté dans les colonnes 7 jours et 30 jours"></div>
+            </div>
+            <div id="mods-list"></div>
+          </div>
+        </section>
+
+        <section class="panel" id="staff">
+          <header class="panel-title"><h2>Ajoute un modo ou change son rang</h2></header>
+          <div class="panel-body">
+            <p class="muted">Seuls les gens de cette équipe ont leurs perms en jeu, pas besoin d'être vérifié. Avec l'ID Discord, le compte est vérifié direct</p>
+            <form id="staff-form" class="form">
+              <label>Pseudo Roblox<input id="staff-name" autocomplete="off" required maxlength="20"></label>
+              <label>Rang<select id="staff-role" required></select></label>
+              <label>ID Discord (optionnel)<input id="staff-discord" autocomplete="off" inputmode="numeric" maxlength="22"></label>
+              <button class="button" type="submit">Valider</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="panel" id="rankups-panel" hidden>
+          <header class="panel-title"><h2>Logs de rankup</h2></header>
+          <div class="panel-body" id="rankups-body"><p class="muted">Ça charge...</p></div>
+        </section>
+
+        <section class="panel" id="former-panel">
+          <header class="panel-title"><h2>Anciens modérateurs</h2></header>
+          <div class="panel-body" id="former-body"><p class="muted">Ça charge...</p></div>
+        </section>
+
+        <section class="panel" id="creators" hidden>
+          <header class="panel-title"><h2>Créateurs de contenu</h2></header>
+          <div class="panel-body">
+            <p class="muted">Ils ont le droit à la freecam en jeu</p>
+            <form id="creator-form" class="form">
+              <label>Pseudo Roblox<input id="creator-name" autocomplete="off" required maxlength="20"></label>
+              <label>ID Discord<input id="creator-discord" autocomplete="off" inputmode="numeric" required pattern="[0-9]{17,20}" maxlength="22" title="Son ID Discord : 17 à 20 chiffres"></label>
+              <button class="button" type="submit">Ajouter</button>
+            </form>
+            <div class="list" id="creator-list"></div>
+          </div>
+        </section>
+      </div>
+
+      <div id="mod-tabs"></div>
+
+      <div id="tab-sanctions" hidden>
+        <section class="panel">
+          <header class="panel-title"><h2>Sanctions en direct</h2></header>
+          <div class="panel-body" id="sanctions-body"><p class="muted">Ça charge...</p></div>
+        </section>
+      </div>
+
+      <div id="tab-shop" hidden>
+        <section class="panel">
+          <header class="panel-title"><h2>Boutique</h2></header>
+          <div class="panel-body" id="shop-body"><p class="muted">Ça charge...</p></div>
+        </section>
+      </div>
+
+      <div id="tab-codes" hidden>
+        <section class="panel">
+          <header class="panel-title"><h2>Codes</h2></header>
+          <div class="panel-body" id="codes-body"><p class="muted">Ça charge...</p></div>
+        </section>
+      </div>
+
+      <div id="tab-afk" hidden>
+        <section class="panel">
+          <header class="panel-title"><h2>Event et Zone AFK</h2></header>
+          <div class="panel-body" id="afk-body"><p class="muted">Ça charge...</p></div>
+        </section>
+      </div>
+
+      <div id="tab-gestion" hidden>
+        <section class="panel">
+          <header class="panel-title"><h2>Gestion</h2></header>
+          <div class="panel-body" id="gestion-body"><p class="muted">Ça charge...</p></div>
+        </section>
+      </div>
+
+      <div id="tab-texts" hidden>
+        <section class="panel">
+          <header class="panel-title"><h2>Règlement et guide des serveurs custom</h2></header>
+          <div class="panel-body" id="texts-body"><p class="muted">Ça charge...</p></div>
+        </section>
+      </div>
+
+      <div id="tab-perms" hidden>
+        <section class="panel">
+          <header class="panel-title"><h2>Permissions du panel</h2></header>
+          <div class="panel-body" id="perms-body"><p class="muted">Ça charge...</p></div>
+        </section>
+      </div>
+
+      <div id="tab-anticheat" hidden>
+        <section class="panel">
+          <header class="panel-title"><h2>Anticheat</h2></header>
+          <div class="panel-body">
+            <div id="ac-body"><p class="muted">Ça charge...</p></div>
+          </div>
+        </section>
+      </div>
+
+      <div id="tab-economy" hidden>
+        <section class="panel">
+          <header class="panel-title"><h2>Économie</h2></header>
+          <div class="panel-body" id="economy-body"><p class="muted">Ça charge...</p></div>
+        </section>
+      </div>
+
+      <div id="tab-settings" hidden>
+        <section class="panel">
+          <header class="panel-title"><h2>Code PIN</h2></header>
+          <div class="panel-body" id="pin-body"><p class="muted">Ça charge...</p></div>
+        </section>
+        <section class="panel">
+          <header class="panel-title"><h2>Appareils connectés</h2></header>
+          <div class="panel-body" id="sessions-body"><p class="muted">Ça charge...</p></div>
+        </section>
+      </div>
+
+      <footer class="pub-foot" id="pub-foot" hidden>
+        <p class="pub-foot-brand"><span class="gradient">SCHOOL FR</span> · l'économie de nos serveurs</p>
+        <p class="pub-foot-note muted" id="pub-foot-note"></p>
+        <nav class="pub-foot-links" aria-label="Liens">
+          <a href="/">Connexion de l'équipe</a>
+          <!-- Ajoute ici le lien de ton Discord : <a href="https://discord.gg/xxxx">Discord</a> -->
+        </nav>
+      </footer>
+    </div>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
